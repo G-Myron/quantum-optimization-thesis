@@ -1,7 +1,7 @@
 from sys import path
 path.append('..')
 from energy_landscape import *
-from problem_quantum import QuantumProblem
+from problem_quantum import *
 
 import networkx as nx
 import numpy as np
@@ -54,6 +54,7 @@ def tsp_cost_function(bitstring, dist_matrix):
 
     return distance
 
+@time_func
 def tsp_brute(dist_matrix):
     n = len(dist_matrix)
     possible_routes = list(permutations(range(1, n)))

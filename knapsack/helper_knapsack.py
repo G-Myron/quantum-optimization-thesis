@@ -1,10 +1,8 @@
 from sys import path
 path.append('..')
 from energy_landscape import *
-from problem_quantum import QuantumProblem
+from problem_quantum import *
 
-import time
-from typing import Tuple
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -20,17 +18,6 @@ from qiskit_optimization.applications import Knapsack
 from qiskit_optimization.algorithms import MinimumEigenOptimizer, MinimumEigenOptimizationResult, OptimizationAlgorithm
 from qiskit_optimization.converters import QuadraticProgramToQubo
 
-
-def time_func(func):
-    def timed(*args, **kwargs):
-        begin = time.time()
-        result = func(*args, **kwargs)
-        end = time.time()
-        return end - begin, result
-    return timed
-
-
-## ----------------------------- KNAPSACK ------------------------------
 
 def make_knapsack_cost_function(qubo_converter:QuadraticProgramToQubo=None):
     interpret = qubo_converter.interpret if qubo_converter else lambda x: x
@@ -119,6 +106,8 @@ def knapsack_quantum(profits, weights, max_weight, *,
     # qaoa_circuit.assign_parameters(parameters, inplace=True)
     # # qaoa_circuit.decompose().decompose().draw('mpl')
 
+    print(f"Quantum solution: {x}, objective: {qp.objective.evaluate(x)} time: {eigen_result.optimizer_time}")
+
     return eigen_result, trajectory, x, (operator, offset), qubo_converter
 
 
@@ -136,5 +125,7 @@ def knapsack_quantum_problem(profits, weights, max_weight, *,
     qubo_converter = QuadraticProgramToQubo()
     qubo = qubo_converter.convert(qp)
 
-    return QuantumProblem(qubo).solve(optimizer=optimizer, circuit=circuit, initial_point=initial_point, reps=reps, backend=backend)
+    result = QuantumProblem(qubo).solve(optimizer=optimizer, circuit=circuit, initial_point=initial_point, reps=reps, backend=backend)
+
+    return (*result, qubo_converter)
 

@@ -23,10 +23,8 @@ def find_energy(beta_gamma_pairs, weights_array, circuit:QuantumCircuit, cost_fu
     copy_circuit = QuantumCircuit(circuit.num_qubits)
     data_points = []
     for beta,gamma in beta_gamma_pairs:
-        copy_circuit.data = []
-        for i in circuit.data:
-            if i.operation.name != 'measure':
-                copy_circuit.data.append(i)
+        copy_circuit = circuit.copy()
+        copy_circuit.remove_final_measurements()
 
         # statevector = Statevector(copy_circuit.assign_parameters([gamma, beta])).probabilities_dict()
         # energy = 0

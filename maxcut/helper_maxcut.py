@@ -1,13 +1,11 @@
-# %%
 from sys import path
 path.append('..')
 from energy_landscape import *
-from problem_quantum import QuantumProblem
+from problem_quantum import *
 
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
-import time
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -47,6 +45,7 @@ def maxcut_cost_function(bitstring, weight_matrix):
                 cost += weight_matrix[i,j]
     return cost
 
+@time_func
 def maxcut_brute(weight_matrix):
     n = weight_matrix.shape[0]
     best_cost = 0

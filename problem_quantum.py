@@ -15,6 +15,15 @@ from qiskit.circuit.library import TwoLocal
 from qiskit.primitives import Sampler, StatevectorSampler, BackendSampler, BackendSamplerV2
 
 
+def time_func(func):
+    def timed(*args, **kwargs):
+        begin = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        return end - begin, result
+    return timed
+
+
 class QuantumProblem():
     # Constants
     default_color = '#1f78b4'

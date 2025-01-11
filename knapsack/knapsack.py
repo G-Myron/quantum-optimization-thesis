@@ -15,7 +15,7 @@ random.seed(seed)
 backend = GenericBackendV2(10)
 
 
-# Create profits and weights arrays
+# Create random profits and weights arrays
 max_weight = 50
 profits = [random.randint(1, 50) for _ in range(n)]
 weights = [random.randint(1, 50) for _ in range(n)]
@@ -37,9 +37,9 @@ eigen_result, trajectory, x, ising, converter = knapsack_quantum(
 )
 qc = eigen_result.optimal_circuit
 params = eigen_result.optimal_point
-print(f"Quantum: {x} \ntime: {eigen_result.optimizer_time}")
 
-plot_qaoa_trajectory(trajectory, profits, qc.decompose(), make_knapsack_cost_function(converter), qc.num_qubits, ising)
+# Plot problem's energy field
+# plot_qaoa_trajectory(trajectory, profits, qc.decompose(), make_knapsack_cost_function(converter), qc.num_qubits, ising)
 
 
 # Final Circuit

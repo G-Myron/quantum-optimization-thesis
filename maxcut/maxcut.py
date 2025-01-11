@@ -15,7 +15,7 @@ random.seed(seed)
 backend = GenericBackendV2(n)
 
 
-# Create adges array
+# Create random edges array
 edges = []
 for v0 in range(n):
     for v1 in range(v0+1, n):
@@ -31,12 +31,10 @@ weight_matrix = nx.to_numpy_array(graph)
 
 
 
-# Brute force
-start_time = time.time()
-brute_x, brute_cost = maxcut_brute(weight_matrix)
-brute_time = time.time() - start_time
+# Classical algorithm
+classical_time, (brute_x, brute_cost) = maxcut_brute(weight_matrix)
 draw_maxcut_graph(graph, brute_x, seed)
-print(f"Best solution: {brute_x}, cost: {brute_cost}, time: {brute_time}")
+print(f"Classical solution: {brute_x}, cost: {brute_cost}, time: {classical_time}")
 
 
 # Quantum Max-Cut
@@ -49,11 +47,12 @@ eigen_result, trajectory, x, ising = maxcut_quantum(
 #     reps=2,
 #     backend=backend
 )
-x_best = eigen_result.best_measurement['bitstring'][::-1] #TODO: Use or delete
 qc = eigen_result.optimal_circuit
 params = eigen_result.optimal_point
 draw_maxcut_graph(graph, x, seed)
 
+# Plot problem's energy field
+x_best = eigen_result.best_measurement['bitstring'][::-1] #TODO: Use or delete
 plot_qaoa_trajectory(trajectory, weight_matrix, qc, maxcut_cost_function, n, ising)
 
 
