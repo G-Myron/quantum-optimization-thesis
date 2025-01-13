@@ -63,6 +63,7 @@ def maxcut_quantum(weight_matrix, optimizer=SLSQP(maxiter=300), circuit='', init
     n = weight_matrix.shape[0]
     sampler = BackendSampler(backend=backend) if backend else Sampler()
 
+    # Define the Quadratic Program for the problem
     qp = QuadraticProgram("Max-Cut")
     qp.binary_var_list(n, "x")
 
@@ -71,7 +72,7 @@ def maxcut_quantum(weight_matrix, optimizer=SLSQP(maxiter=300), circuit='', init
 
     qp.maximize(quadratic=qubo_matrix, linear=qubo_vector)
 
-    # Map to the Ising problem
+    # Map to the Ising model
     operator, offset = qp.to_ising()
 
     # VQE callback function to save the trajectory of the optimization parameters

@@ -89,6 +89,7 @@ def tsp_quantum(graph, optimizer=COBYLA(maxiter=300), circuit='', initial_point=
     distances = nx.to_numpy_array(graph)
     sampler = BackendSampler(backend=backend) if backend else Sampler()
 
+    # Define the Quadratic Program for the problem
     qp = QuadraticProgram("Traveling Salesman")
     qp.binary_var_list([f"{i}{j}" for i in range(n) for j in range(n)], "x")
     
@@ -108,34 +109,27 @@ def tsp_quantum(graph, optimizer=COBYLA(maxiter=300), circuit='', initial_point=
     # Convert constrained quadratic problem to QUBO
     qubo = QuadraticProgramToQubo().convert(qp)
 
-    # Map to the Ising problem
+    # Map to the Ising model
     operator, offset = qubo.to_ising()
 
+    # VQE callback function to save the trajectory of the optimization parameters
     trajectory={'beta_0':[], 'gamma_0':[], 'energy':[]}
     def callback(eval_count, params, value, std_dev):
         trajectory['beta_0'].append(params[1])
         trajectory['gamma_0'].append(params[0])
-        trajectory['energy'].append(value)
+        trajectory['energy'].append( -value -offset)
 
     # Choose the quantum circuit
     ry_ansatz = TwoLocal(operator.num_qubits, "ry", "cz", entanglement="linear", reps=reps)
     qaoa_ansatz = QAOAAnsatz(operator, reps=reps).decompose()
     ansatz = qaoa_ansatz if circuit.lower()=='qaoa' else ry_ansatz
 
+    # Create and run the VQE
     vqe = SamplingVQE(sampler, ansatz, optimizer, initial_point=initial_point, callback=callback)
     eigen_result = vqe.compute_minimum_eigenvalue(operator)
 
-    #TODO: Check if this is correct
-    # x = [int(i) for i in eigen_result.best_measurement['bitstring'][::-1]]
-    # print("time:", eigen_result.optimizer_time)
-    # print("qubits:", x)
-    # print("solution:", interpret(x))
-    # print("solution objective:", qubo.objective.evaluate(x))
-    
-    # Compute the most likely output
-    probabilities = eigen_result.eigenstate.binary_probabilities()
-    x_string = max(probabilities, key=lambda kv: probabilities[kv])[::-1]
-    x = np.fromiter(x_string, dtype=int)
+    # Get the best measurement
+    x = [int(i) for i in eigen_result.best_measurement['bitstring'][::-1]]
     route = interpret(x)
 
     print(f"Quantum solution: {route}, objective: {qubo.objective.evaluate(x)} time: {eigen_result.optimizer_time}")

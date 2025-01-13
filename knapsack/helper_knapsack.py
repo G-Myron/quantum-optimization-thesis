@@ -66,13 +66,14 @@ def knapsack_quantum(profits, weights, max_weight, *,
     n = len(weights)
     sampler = BackendSampler(backend=backend) if backend else Sampler()
 
+    # Define the Quadratic Program for the problem
     qp = QuadraticProgram("Knapsack")
     qp.binary_var_list(n, "x")
 
     qp.maximize(linear=profits)
     qp.linear_constraint(weights, "<=", max_weight)
 
-    # Map to the Ising problem
+    # Map to the Ising model
     qubo_converter = QuadraticProgramToQubo()
     qubo = qubo_converter.convert(qp)
     operator, offset = qubo.to_ising()
@@ -84,27 +85,19 @@ def knapsack_quantum(profits, weights, max_weight, *,
         trajectory['gamma_0'].append(params[0])
         trajectory['energy'].append( -value -offset)
 
+    # Choose the quantum circuit
+    ry_ansatz = TwoLocal(operator.num_qubits, "ry", "cz", entanglement="linear", reps=reps)
+    qaoa_ansatz = QAOAAnsatz(operator, reps=reps).decompose()
+    ansatz = qaoa_ansatz if circuit.lower()=='qaoa' else ry_ansatz
 
-    qaoa_mes = QAOA(sampler, optimizer, initial_point=initial_point, reps=reps, callback=callback)
+    # Create and run the VQE
+    vqe = SamplingVQE(sampler, ansatz, optimizer, initial_point=initial_point, callback=callback)
+    eigen_result = vqe.compute_minimum_eigenvalue(operator)
 
-    # qaoa = MinimumEigenOptimizer(qaoa_mes).solve(qp)
-    # eigen_result = qaoa.min_eigen_solver_result
-    # print(qaoa.x)
-
-    eigen_result = qaoa_mes.compute_minimum_eigenvalue(operator)
+    # Get the best solution from the statevector
     raw_samples = OptimizationAlgorithm._eigenvector_to_solutions(eigen_result.eigenstate, qubo)
-
     raw_samples.sort(key=lambda x: x.fval)
     x = qubo_converter.interpret(raw_samples[0].x)
-
-    # samples, best_raw = OptimizationAlgorithm._interpret_samples(qp, raw_samples, qubo_converter)
-    # x = qubo_converter.interpret(best_raw.x)
-
-    # p = 1
-    # qaoa_circuit = QAOAAnsatz(cost_operator=operator, reps=p)
-    # parameters = [Parameter(f'γ_{i}') for i in range(p)] + [Parameter(f'β_{i}') for i in range(p)]
-    # qaoa_circuit.assign_parameters(parameters, inplace=True)
-    # # qaoa_circuit.decompose().decompose().draw('mpl')
 
     print(f"Quantum solution: {x}, objective: {qp.objective.evaluate(x)} time: {eigen_result.optimizer_time}")
 

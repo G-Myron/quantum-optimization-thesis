@@ -39,7 +39,8 @@ eigen_result, trajectory, x, ising = tsp_quantum(
 route = interpret(x)
 qc = eigen_result.optimal_circuit
 params = eigen_result.optimal_point
-draw_tsp_graph(graph, route)
+try: draw_tsp_graph(graph, route)
+except Exception: pass
 
 # Plot problem's energy field
 # plot_qaoa_trajectory(trajectory, distances, qc.decompose(), tsp_cost_function, num_qubits, ising)
