@@ -8,14 +8,12 @@ warnings.filterwarnings('ignore')
 
 from qiskit import QuantumCircuit
 from qiskit.circuit import Parameter
-from qiskit.circuit.library.n_local.qaoa_ansatz import QAOAAnsatz
-from qiskit.circuit.library import TwoLocal
-from qiskit_algorithms import QAOA, NumPyMinimumEigensolver, SamplingVQE
-from qiskit_algorithms.optimizers import COBYLA, SPSA, SLSQP, ADAM
+from qiskit.circuit.library import TwoLocal, QAOAAnsatz
 from qiskit.primitives import Sampler, BackendSampler
+from qiskit_algorithms import SamplingVQE
+from qiskit_algorithms.optimizers import COBYLA, SPSA, SLSQP, ADAM
 from qiskit_optimization import QuadraticProgram
-from qiskit_optimization.applications import Knapsack
-from qiskit_optimization.algorithms import MinimumEigenOptimizer, MinimumEigenOptimizationResult, OptimizationAlgorithm
+from qiskit_optimization.algorithms import OptimizationAlgorithm
 from qiskit_optimization.converters import QuadraticProgramToQubo
 
 
@@ -60,7 +58,6 @@ def knapsack_dynamic(capacity, weights, values):
     return matrix[n][capacity], selected_items[::-1], result
 
 
-
 def knapsack_quantum(profits, weights, max_weight, *,
                      optimizer=COBYLA(), circuit='', initial_point=None, reps=1, backend=None):
     n = len(weights)
@@ -86,9 +83,10 @@ def knapsack_quantum(profits, weights, max_weight, *,
         trajectory['energy'].append( -value -offset)
 
     # Choose the quantum circuit
-    ry_ansatz = TwoLocal(operator.num_qubits, "ry", "cz", entanglement="linear", reps=reps)
-    qaoa_ansatz = QAOAAnsatz(operator, reps=reps).decompose()
-    ansatz = qaoa_ansatz if circuit.lower()=='qaoa' else ry_ansatz
+    if circuit.lower()=='qaoa':
+        ansatz = QAOAAnsatz(operator, reps=reps).decompose()
+    else:
+        ansatz = TwoLocal(operator.num_qubits, "ry", "cz", entanglement="full", reps=reps)
 
     # Create and run the VQE
     vqe = SamplingVQE(sampler, ansatz, optimizer, initial_point=initial_point, callback=callback)
@@ -99,7 +97,7 @@ def knapsack_quantum(profits, weights, max_weight, *,
     raw_samples.sort(key=lambda x: x.fval)
     x = qubo_converter.interpret(raw_samples[0].x)
 
-    print(f"Quantum solution: {x}, objective: {qp.objective.evaluate(x)} time: {eigen_result.optimizer_time}")
+    print(f"Quantum solution: {x}, objective: {qp.objective.evaluate(x)}, time: {eigen_result.optimizer_time}")
 
     return eigen_result, trajectory, x, (operator, offset), qubo_converter
 

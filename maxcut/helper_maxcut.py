@@ -10,8 +10,6 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from qiskit_optimization import QuadraticProgram
-from qiskit_optimization.algorithms import MinimumEigenOptimizer
-from qiskit_optimization.applications import Maxcut
 from qiskit_algorithms import QAOA, SamplingVQE, NumPyMinimumEigensolver
 from qiskit_algorithms.optimizers import SPSA, ADAM, COBYLA, SLSQP
 from qiskit.circuit.library.n_local.qaoa_ansatz import QAOAAnsatz

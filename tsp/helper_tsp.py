@@ -12,13 +12,12 @@ warnings.filterwarnings('ignore')
 
 from qiskit_optimization.problems import QuadraticProgram
 from qiskit_optimization.converters import QuadraticProgramToQubo
-from qiskit_optimization.algorithms import MinimumEigenOptimizer
 from qiskit_optimization.applications import Tsp
 from qiskit_algorithms import SamplingVQE
 from qiskit_algorithms.optimizers import SPSA, ADAM, COBYLA, SLSQP
 from qiskit.circuit.library.n_local.qaoa_ansatz import QAOAAnsatz
 from qiskit.circuit.library import TwoLocal
-from qiskit.primitives import Sampler, StatevectorSampler, BackendSampler
+from qiskit.primitives import Sampler, BackendSampler
 
 
 
