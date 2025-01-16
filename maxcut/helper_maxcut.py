@@ -10,7 +10,8 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from qiskit_optimization import QuadraticProgram
-from qiskit_algorithms import QAOA, SamplingVQE, NumPyMinimumEigensolver
+from qiskit_optimization.algorithms import GoemansWilliamsonOptimizer
+from qiskit_algorithms import SamplingVQE
 from qiskit_algorithms.optimizers import SPSA, ADAM, COBYLA, SLSQP
 from qiskit.circuit.library.n_local.qaoa_ansatz import QAOAAnsatz
 from qiskit.circuit.library import TwoLocal
@@ -56,10 +57,27 @@ def maxcut_brute(weight_matrix):
     
     return best_x, best_cost
 
+def maxcut_gw(weight_matrix):
+    n = weight_matrix.shape[0]
 
-def maxcut_quantum(weight_matrix, optimizer=SLSQP(maxiter=300), circuit='', initial_point=None, reps=1, backend=None):
+    qp = QuadraticProgram("Max-Cut")
+    qp.binary_var_list(n, "x")
+    qp.maximize(
+        quadratic=-weight_matrix,
+        linear=sum(row for row in weight_matrix)
+    )
+
+    GWOptimizer = GoemansWilliamsonOptimizer(num_cuts=1)
+    result = GWOptimizer.solve(qp)
+    print(result.prettyprint())
+
+
+def maxcut_quantum(weight_matrix, *,
+                   optimizer=SLSQP(maxiter=300), circuit='', initial_point=None, p=1, backend=None):
     n = weight_matrix.shape[0]
     sampler = BackendSampler(backend=backend) if backend else Sampler()
+    # In the new version:
+    # sampler = BackendSamplerV2(backend=backend) if backend else StatevectorSampler()
 
     # Define the Quadratic Program for the problem
     qp = QuadraticProgram("Max-Cut")
@@ -81,9 +99,10 @@ def maxcut_quantum(weight_matrix, optimizer=SLSQP(maxiter=300), circuit='', init
         trajectory['energy'].append( -value -offset)
 
     # Choose the quantum circuit
-    ry_ansatz = TwoLocal(operator.num_qubits, "ry", "cz", entanglement="linear", reps=reps)
-    qaoa_ansatz = QAOAAnsatz(operator, reps=reps).decompose()
-    ansatz = qaoa_ansatz if circuit.lower()=='qaoa' else ry_ansatz
+    if circuit.lower()=='qaoa':
+        ansatz = QAOAAnsatz(operator, reps=p).decompose()
+    else:
+        ansatz = TwoLocal(operator.num_qubits, "ry", "cz", entanglement="linear", reps=p)
 
     # Create and run the VQE
     vqe = SamplingVQE(sampler, ansatz, optimizer, initial_point=initial_point, callback=callback)
@@ -94,7 +113,7 @@ def maxcut_quantum(weight_matrix, optimizer=SLSQP(maxiter=300), circuit='', init
     x_string = max(probabilities, key=lambda kv: probabilities[kv])[::-1]
     x = np.fromiter(x_string, dtype=int)
 
-    print(f"Quantum solution: {x_string}, objective: {qp.objective.evaluate(x)} time: {eigen_result.optimizer_time}")
+    print(f"Quantum solution: {x_string}, objective: {qp.objective.evaluate(x)}, time: {eigen_result.optimizer_time}")
 
     return eigen_result, trajectory, x_string, (operator, offset)
 

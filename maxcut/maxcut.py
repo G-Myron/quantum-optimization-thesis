@@ -2,7 +2,6 @@
 from helper_maxcut import *
 
 import random
-from qiskit.primitives import StatevectorSampler, BackendSamplerV2
 from qiskit.visualization import plot_histogram
 from qiskit.providers.fake_provider import GenericBackendV2
 
@@ -31,10 +30,11 @@ weight_matrix = nx.to_numpy_array(graph)
 
 
 
-# Classical algorithm
+# Classical algorithms
 classical_time, (brute_x, brute_cost) = maxcut_brute(weight_matrix)
 draw_maxcut_graph(graph, brute_x, seed)
 print(f"Classical solution: {brute_x}, cost: {brute_cost}, time: {classical_time}")
+maxcut_gw(weight_matrix)
 
 
 # Quantum Max-Cut
@@ -44,7 +44,7 @@ eigen_result, trajectory, x, ising = maxcut_quantum(
     initial_point=[0.758, -0.108],
     optimizer=ADAM(),
     circuit='qaoa',
-#     reps=2,
+#     p=2,
 #     backend=backend
 )
 qc = eigen_result.optimal_circuit

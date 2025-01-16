@@ -59,7 +59,7 @@ def knapsack_dynamic(capacity, weights, values):
 
 
 def knapsack_quantum(profits, weights, max_weight, *,
-                     optimizer=COBYLA(), circuit='', initial_point=None, reps=1, backend=None):
+                     optimizer=COBYLA(), circuit='', initial_point=None, p=1, backend=None):
     n = len(weights)
     sampler = BackendSampler(backend=backend) if backend else Sampler()
 
@@ -84,9 +84,9 @@ def knapsack_quantum(profits, weights, max_weight, *,
 
     # Choose the quantum circuit
     if circuit.lower()=='qaoa':
-        ansatz = QAOAAnsatz(operator, reps=reps).decompose()
+        ansatz = QAOAAnsatz(operator, reps=p).decompose()
     else:
-        ansatz = TwoLocal(operator.num_qubits, "ry", "cz", entanglement="full", reps=reps)
+        ansatz = TwoLocal(operator.num_qubits, "ry", "cz", entanglement="full", reps=p)
 
     # Create and run the VQE
     vqe = SamplingVQE(sampler, ansatz, optimizer, initial_point=initial_point, callback=callback)

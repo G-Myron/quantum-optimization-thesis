@@ -33,7 +33,7 @@ eigen_result, trajectory, x, ising, converter = knapsack_quantum(
     # initial_point=[1, -0.1],
     # optimizer=ADAM(maxiter=300),
     # circuit='qaoa',
-    reps=5,
+    p=5,
     # backend=backend
 )
 qc = eigen_result.optimal_circuit
