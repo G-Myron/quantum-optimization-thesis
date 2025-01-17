@@ -2,8 +2,7 @@
 from helper_tsp import *
 from energy_landscape import *
 
-import random
-import time
+from qiskit.providers.fake_provider import GenericBackendV2
 
 
 
@@ -12,10 +11,11 @@ n = 3
 network_seed = 123
 num_qubits = n**2
 
+backend = GenericBackendV2(n)
+
 # Create random TSP graph
 graph = Tsp.create_random_instance(n, seed=network_seed).graph
 distances = nx.to_numpy_array(graph)
-
 
 
 # Draw problem's graph
@@ -33,7 +33,7 @@ eigen_result, trajectory, x, ising = tsp_quantum(
     # initial_point=[1, 0.7],
     # optimizer=ADAM(maxiter=300),
     # circuit='qaoa',
-    # reps=5,
+    # p=5,
     # backend=backend
 )
 route = interpret(x)

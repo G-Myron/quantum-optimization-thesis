@@ -72,7 +72,7 @@ def maxcut_gw(weight_matrix):
     print(result.prettyprint())
 
 
-def maxcut_quantum(weight_matrix, *,
+def maxcut_quantum(weight_matrix:np.ndarray, *,
                    optimizer=SLSQP(maxiter=300), circuit='', initial_point=None, p=1, backend=None):
     n = weight_matrix.shape[0]
     sampler = BackendSampler(backend=backend) if backend else Sampler()
@@ -129,5 +129,5 @@ def maxcut_quantum_problem(weight_matrix, optimizer=SLSQP(maxiter=300), circuit=
 
     qp.maximize(quadratic=qubo_matrix, linear=qubo_vector)
 
-    return QuantumProblem(qp).solve(optimizer=optimizer, circuit=circuit, initial_point=initial_point, reps=reps, backend=backend)
+    return QuantumProblem(qp).solve(optimizer=optimizer, circuit=circuit, initial_point=initial_point, p=reps, backend=backend)
 

@@ -83,7 +83,9 @@ def interpret(x):
             route.append(p_step)
     return route
 
-def tsp_quantum(graph, optimizer=COBYLA(maxiter=300), circuit='', initial_point=None, reps=1, backend=None):
+def tsp_quantum(graph:nx.Graph, *,
+                 optimizer=COBYLA(maxiter=300), circuit='', initial_point=None, p=1, backend=None):
+
     n = graph.number_of_nodes()
     distances = nx.to_numpy_array(graph)
     sampler = BackendSampler(backend=backend) if backend else Sampler()
@@ -119,9 +121,10 @@ def tsp_quantum(graph, optimizer=COBYLA(maxiter=300), circuit='', initial_point=
         trajectory['energy'].append( -value -offset)
 
     # Choose the quantum circuit
-    ry_ansatz = TwoLocal(operator.num_qubits, "ry", "cz", entanglement="linear", reps=reps)
-    qaoa_ansatz = QAOAAnsatz(operator, reps=reps).decompose()
-    ansatz = qaoa_ansatz if circuit.lower()=='qaoa' else ry_ansatz
+    if circuit.lower()=='qaoa':
+        ansatz = QAOAAnsatz(operator, reps=p).decompose()
+    else:
+        ansatz = TwoLocal(operator.num_qubits, "ry", "cz", entanglement="linear", reps=p)
 
     # Create and run the VQE
     vqe = SamplingVQE(sampler, ansatz, optimizer, initial_point=initial_point, callback=callback)
@@ -131,7 +134,7 @@ def tsp_quantum(graph, optimizer=COBYLA(maxiter=300), circuit='', initial_point=
     x = [int(i) for i in eigen_result.best_measurement['bitstring'][::-1]]
     route = interpret(x)
 
-    print(f"Quantum solution: {route}, objective: {qubo.objective.evaluate(x)} time: {eigen_result.optimizer_time}")
+    print(f"Quantum solution: {route}, objective: {qubo.objective.evaluate(x)}, time: {eigen_result.optimizer_time}")
 
     return eigen_result, trajectory, x, (operator, offset)
 
@@ -159,5 +162,5 @@ def tsp_quantum_problem(graph, optimizer=SLSQP(maxiter=300), circuit='', initial
     # Convert constrained quadratic problem to QUBO
     qubo = QuadraticProgramToQubo().convert(qp)
 
-    return QuantumProblem(qubo).solve(optimizer=optimizer, circuit=circuit, initial_point=initial_point, reps=reps, backend=backend)
+    return QuantumProblem(qubo).solve(optimizer=optimizer, circuit=circuit, initial_point=initial_point, p=reps, backend=backend)
 

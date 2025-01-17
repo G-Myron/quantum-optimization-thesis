@@ -116,7 +116,7 @@ def knapsack_quantum_problem(profits, weights, max_weight, *,
     qubo_converter = QuadraticProgramToQubo()
     qubo = qubo_converter.convert(qp)
 
-    result = QuantumProblem(qubo).solve(optimizer=optimizer, circuit=circuit, initial_point=initial_point, reps=reps, backend=backend)
+    result = QuantumProblem(qubo).solve(optimizer=optimizer, circuit=circuit, initial_point=initial_point, p=reps, backend=backend)
 
     return (*result, qubo_converter)
 

@@ -39,8 +39,10 @@ class QuantumProblem():
             trajectory['energy'].append(-value -offset)
         return callback
     
-    def solve(self, optimizer=SLSQP(maxiter=300), circuit='', initial_point=None, reps=1, backend=None):
+    def solve(self, *, optimizer=SLSQP(maxiter=300), circuit='', initial_point=None, p=1, backend=None):
         sampler = BackendSampler(backend=backend) if backend else Sampler()
+        # In the new version:
+        # sampler = BackendSamplerV2(backend=backend) if backend else StatevectorSampler()
 
         # Map to the Ising problem
         operator, offset = self.qubo_program.to_ising()
@@ -49,22 +51,16 @@ class QuantumProblem():
         trajectory={'beta_0':[], 'gamma_0':[], 'energy':[]}
 
         # Choose the quantum circuit
-        ry_ansatz = TwoLocal(operator.num_qubits, "ry", "cz", entanglement="linear", reps=reps)
-        qaoa_ansatz = QAOAAnsatz(operator, reps=reps).decompose()
-        ansatz = qaoa_ansatz if circuit.lower()=='qaoa' else ry_ansatz
+        if circuit.lower()=='qaoa':
+            ansatz = QAOAAnsatz(operator, reps=p).decompose()
+        else:
+            ansatz = TwoLocal(operator.num_qubits, "ry", "cz", entanglement="linear", reps=p)
 
-        # Choose initial points: [-.7, 4.4], [0.2, -0.2], [0.3, 6.1] for maxcut
+        # Choose initial points
         vqe = SamplingVQE(sampler, ansatz, optimizer, initial_point=initial_point, callback=self.vqe_callback(trajectory, offset))
         eigen_result = vqe.compute_minimum_eigenvalue(operator)
 
-        # Compute the most likely output
-        probabilities = eigen_result.eigenstate.binary_probabilities()
-        x_string = max(probabilities, key=lambda kv: probabilities[kv])[::-1]
-        x = np.fromiter(x_string, dtype=int)
-
-        print(f"Quantum solution: {x_string}, objective: {self.qubo_program.objective.evaluate(x)} time: {eigen_result.optimizer_time}")
-
-        return eigen_result, trajectory, x_string, (operator, offset)
+        return eigen_result, trajectory, (operator, offset)
 
 
 
