@@ -111,9 +111,11 @@ def maxcut_quantum(weight_matrix:np.ndarray, *,
     # Compute the most likely output
     probabilities = eigen_result.eigenstate.binary_probabilities()
     x_string = max(probabilities, key=lambda kv: probabilities[kv])[::-1]
+    # x_string = eigen_result.best_measurement['bitstring'][::-1]
     x = np.fromiter(x_string, dtype=int)
 
-    print(f"Quantum solution: {x_string}, objective: {qp.objective.evaluate(x)}, time: {eigen_result.optimizer_time}")
+    print(f"Quantum solution: {x_string}, objective: {qp.objective.evaluate(x)}\
+          \nQuantum measurements: {eigen_result.cost_function_evals}, time: {eigen_result.optimizer_time}")
 
     return eigen_result, trajectory, x_string, (operator, offset)
 

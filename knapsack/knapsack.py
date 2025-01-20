@@ -24,16 +24,17 @@ weights = [random.randint(1, 50) for _ in range(n)]
 
 # Classical dynamic programming
 classical_time, (classical, items, result) = knapsack_dynamic(max_weight, weights, profits)
-print(f"Best value: {classical}, time: {classical_time} \nItems (pos,weight,value): {items} \nResult: {result}\n")
+print(f"Best value: {classical}, time: {classical_time}\
+      \nChosen items (pos,weight,value): {items} \nResult: {result}\n")
 
 
 # Quantum Knapsack
 eigen_result, trajectory, x, ising, converter = knapsack_quantum(
     profits, weights, max_weight,
     # initial_point=[1, -0.1],
-    # optimizer=ADAM(maxiter=300),
-    # circuit='qaoa',
-    p=5,
+    optimizer=COBYLA(maxiter=300),
+    circuit='qaoa',
+    # p=5,
     # backend=backend
 )
 qc = eigen_result.optimal_circuit

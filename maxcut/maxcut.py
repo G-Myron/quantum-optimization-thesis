@@ -28,31 +28,32 @@ graph.add_nodes_from(range(0,n))
 graph.add_weighted_edges_from(edges)
 weight_matrix = nx.to_numpy_array(graph)
 
+# Draw problem's graph
+draw_maxcut_graph(graph)
 
 
 # Classical algorithms
 classical_time, (brute_x, brute_cost) = maxcut_brute(weight_matrix)
-draw_maxcut_graph(graph, brute_x, seed)
 print(f"Classical solution: {brute_x}, cost: {brute_cost}, time: {classical_time}")
 maxcut_gw(weight_matrix)
+draw_maxcut_graph(graph, brute_x, seed)
 
 
 # Quantum Max-Cut
 eigen_result, trajectory, x, ising = maxcut_quantum(
     weight_matrix,
-    # initial_point=[0.2, -0.2],
     initial_point=[0.758, -0.108],
-    optimizer=ADAM(),
+    # initial_point=[0.2, -0.2],
+    optimizer=ADAM(maxiter=300),
     circuit='qaoa',
-#     p=2,
-#     backend=backend
+    # p=5,
+    # backend=backend
 )
 qc = eigen_result.optimal_circuit
 params = eigen_result.optimal_point
 draw_maxcut_graph(graph, x, seed)
 
 # Plot problem's energy field
-x_best = eigen_result.best_measurement['bitstring'][::-1] #TODO: Use or delete
 plot_qaoa_trajectory(trajectory, weight_matrix, qc, maxcut_cost_function, n, ising)
 
 

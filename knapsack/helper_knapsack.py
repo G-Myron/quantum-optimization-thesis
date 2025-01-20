@@ -59,7 +59,7 @@ def knapsack_dynamic(capacity, weights, values):
 
 
 def knapsack_quantum(profits, weights, max_weight, *,
-                     optimizer=COBYLA(), circuit='', initial_point=None, p=1, backend=None):
+                     optimizer=COBYLA(maxiter=300), circuit='', initial_point=None, p=1, backend=None):
     n = len(weights)
     sampler = BackendSampler(backend=backend) if backend else Sampler()
 
@@ -97,7 +97,8 @@ def knapsack_quantum(profits, weights, max_weight, *,
     raw_samples.sort(key=lambda x: x.fval)
     x = qubo_converter.interpret(raw_samples[0].x)
 
-    print(f"Quantum solution: {x}, objective: {qp.objective.evaluate(x)}, time: {eigen_result.optimizer_time}")
+    print(f"Quantum solution: {x}, value: {qp.objective.evaluate(x)}\
+          \nQuantum measurements: {eigen_result.cost_function_evals}, time: {eigen_result.optimizer_time}")
 
     return eigen_result, trajectory, x, (operator, offset), qubo_converter
 

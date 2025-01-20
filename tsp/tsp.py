@@ -7,7 +7,7 @@ from qiskit.providers.fake_provider import GenericBackendV2
 
 
 # Define problem constants
-n = 3
+n = 4
 network_seed = 123
 num_qubits = n**2
 
@@ -31,9 +31,9 @@ print(f"Best route = {best_route}, total distance = {best_distance}, time: {clas
 eigen_result, trajectory, x, ising = tsp_quantum(
     graph,
     # initial_point=[1, 0.7],
-    # optimizer=ADAM(maxiter=300),
-    # circuit='qaoa',
-    # p=5,
+    optimizer=COBYLA(maxiter=300),
+    circuit='qaoa',
+    # p=2,
     # backend=backend
 )
 route = interpret(x)

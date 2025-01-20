@@ -97,8 +97,8 @@ def tsp_quantum(graph:nx.Graph, *,
     qubo_matrix = np.zeros((n**2,n**2))
     for i in range(n):
         for j in range(n):
-            for p in range(n):
-                qubo_matrix[ n*i+p, n*j + (p+1)%n ] = distances[i,j]
+            for k in range(n):
+                qubo_matrix[ n*i+k, n*j + (k+1)%n ] = distances[i,j]
 
     for i in range(n):
         qp.linear_constraint(linear={f"x{i}{k}":1 for k in range(n)}, sense="==", rhs=1)
@@ -134,7 +134,8 @@ def tsp_quantum(graph:nx.Graph, *,
     x = [int(i) for i in eigen_result.best_measurement['bitstring'][::-1]]
     route = interpret(x)
 
-    print(f"Quantum solution: {route}, objective: {qubo.objective.evaluate(x)}, time: {eigen_result.optimizer_time}")
+    print(f"Quantum solution: {route}, objective: {qubo.objective.evaluate(x)}\
+          \nQuantum measurements: {eigen_result.cost_function_evals}, time: {eigen_result.optimizer_time}")
 
     return eigen_result, trajectory, x, (operator, offset)
 
