@@ -3,9 +3,6 @@ path.append('..')
 from energy_landscape import *
 from problem_quantum import *
 
-import warnings
-warnings.filterwarnings('ignore')
-
 from qiskit import QuantumCircuit
 from qiskit.circuit import Parameter
 from qiskit.circuit.library import TwoLocal, QAOAAnsatz

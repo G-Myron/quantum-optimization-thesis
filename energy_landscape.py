@@ -1,18 +1,12 @@
-#%%
 from typing import Tuple
-import networkx as nx
 import numpy as np
-import pandas as pd
+from pandas import DataFrame
 import plotly.graph_objects as go
-from qiskit import QuantumCircuit
-from qiskit.quantum_info import Statevector
 from qiskit.primitives import StatevectorEstimator, Sampler
 from qiskit.quantum_info import SparsePauliOp
-from qiskit_algorithms.minimum_eigensolvers.diagonal_estimator import _DiagonalEstimator
-from scipy.interpolate import make_interp_spline
 
 
-def find_energy(beta_gamma_pairs, weights_array, circuit:QuantumCircuit, cost_function, num_qubits, ising):
+def find_energy(beta_gamma_pairs, weights_array, circuit, cost_function, num_qubits, ising):
     # Create dictionary with precomputed costs for all bitstrings
     costs = {}
     for i in range(2**num_qubits):
@@ -20,19 +14,12 @@ def find_energy(beta_gamma_pairs, weights_array, circuit:QuantumCircuit, cost_fu
         x = [int(bit) for bit in bitstr]
         costs[bitstr] = cost_function(x, weights_array)
 
-    copy_circuit = QuantumCircuit(circuit.num_qubits)
     data_points = []
     for beta,gamma in beta_gamma_pairs:
         copy_circuit = circuit.copy()
         copy_circuit.remove_final_measurements()
-
-        # statevector = Statevector(copy_circuit.assign_parameters([gamma, beta])).probabilities_dict()
-        # energy = 0
-        # for bitstring, prob in statevector.items():
-        #     energy += costs[bitstring]*prob
         
         (operator, offset) = ising
-        # estimator_value = _DiagonalEstimator(Sampler()).run(circuit, operator, [gamma, beta]).result().values[0]
         estimator_value = StatevectorEstimator().run([(copy_circuit, operator, [gamma, beta])]).result()[0].data.evs
         energy = -estimator_value.real - offset
 
@@ -42,13 +29,13 @@ def find_energy(beta_gamma_pairs, weights_array, circuit:QuantumCircuit, cost_fu
 
 
 
-def plot_qaoa_energy_landscape(weights_array:np.array, circuit:QuantumCircuit, cost_function, num_qubits:int, ising:Tuple[SparsePauliOp, float], *, show=True) -> dict:
+def plot_qaoa_energy_landscape(weights_array, circuit, cost_function, num_qubits:int, ising:Tuple[SparsePauliOp, float], *, show=True) -> dict:
     beta_gamma_pairs = [(b,g) for b in np.linspace( -np.pi/2, np.pi/2, 30) 
                         for g in np.linspace(0, np.pi/2, 30)]
     data_points = find_energy(beta_gamma_pairs, weights_array, circuit, cost_function, num_qubits, ising)
 
     # Create and display surface plot from data_points
-    df = pd.DataFrame(data_points)
+    df = DataFrame(data_points)
     df = df.pivot(index='beta', columns='gamma', values='energy')
     matrix = df.to_numpy().T
 

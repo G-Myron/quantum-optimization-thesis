@@ -7,8 +7,6 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 from itertools import permutations
-import warnings
-warnings.filterwarnings('ignore')
 
 from qiskit_optimization.problems import QuadraticProgram
 from qiskit_optimization.converters import QuadraticProgramToQubo

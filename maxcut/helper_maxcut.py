@@ -6,8 +6,6 @@ from problem_quantum import *
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
-import warnings
-warnings.filterwarnings('ignore')
 
 from qiskit_optimization import QuadraticProgram
 from qiskit_optimization.algorithms import GoemansWilliamsonOptimizer
