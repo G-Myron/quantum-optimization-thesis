@@ -7,8 +7,14 @@ from qiskit.visualization import plot_histogram
 from qiskit.providers.fake_provider import GenericBackendV2
 
 
+ArgumentParser = argparse.ArgumentParser()
+ArgumentParser.add_argument("--n", help="The size n of the problem", type=int, default=4)
+
 # Define problem constants
-n = 3
+n = ArgumentParser.parse_args().n
+if n<=0:
+    raise ValueError("n must be a positive integer")
+
 seed = 123
 
 random.seed(seed)

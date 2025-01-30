@@ -1,9 +1,10 @@
+import sys, argparse, time, warnings
+warnings.filterwarnings('ignore')
+
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
-import time
-import warnings
-warnings.filterwarnings('ignore')
+# plt.switch_backend('agg')
 
 from qiskit.circuit.library import TwoLocal
 from qiskit.circuit.library.n_local.qaoa_ansatz import QAOAAnsatz

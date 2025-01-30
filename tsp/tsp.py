@@ -5,9 +5,14 @@ from energy_landscape import *
 from qiskit.providers.fake_provider import GenericBackendV2
 
 
+ArgumentParser = argparse.ArgumentParser()
+ArgumentParser.add_argument("--n", help="The size n of the problem", type=int, default=4)
 
 # Define problem constants
-n = 4
+n = ArgumentParser.parse_args().n
+if n<=2:
+    raise ValueError("The size n of the problem must be greater than 2")
+
 network_seed = 123
 num_qubits = n**2
 
@@ -24,7 +29,7 @@ draw_tsp_graph(graph)
 # Brute force algorithm
 classical_time, (best_distance, best_route) = tsp_brute(distances)
 draw_tsp_graph(graph, best_route)
-print(f"Best route = {best_route}, total distance = {best_distance}, time: {classical_time}")
+print(f"Best route = {best_route}, total distance = {best_distance}, time: {classical_time}\n")
 
 
 # Quantum TSP

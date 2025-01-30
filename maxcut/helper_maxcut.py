@@ -67,15 +67,15 @@ def maxcut_gw(weight_matrix):
 
     GWOptimizer = GoemansWilliamsonOptimizer(num_cuts=1)
     result = GWOptimizer.solve(qp)
-    print(result.prettyprint())
+    print(result.prettyprint(), '\n')
 
 
 def maxcut_quantum(weight_matrix:np.ndarray, *,
-                   optimizer=SLSQP(maxiter=300), circuit='', initial_point=None, p=1, backend=None):
+                   optimizer=SLSQP(maxiter=300), circuit='', initial_point=None, p=1,):
     n = weight_matrix.shape[0]
-    sampler = BackendSampler(backend=backend) if backend else Sampler()
+    sampler = Sampler()
     # In the new version:
-    # sampler = BackendSamplerV2(backend=backend) if backend else StatevectorSampler()
+    # sampler = StatevectorSampler()
 
     # Define the Quadratic Program for the problem
     qp = QuadraticProgram("Max-Cut")

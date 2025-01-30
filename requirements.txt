@@ -1,6 +1,5 @@
 qiskit==1.2
 qiskit-algorithms==0.3.1
-qiskit-ibm-runtime==0.33.2
 qiskit-optimization[cvx]==0.6.1
 networkx
 plotly

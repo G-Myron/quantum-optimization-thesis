@@ -3,15 +3,18 @@ from helper_maxcut import *
 
 import random
 from qiskit.visualization import plot_histogram
-from qiskit.providers.fake_provider import GenericBackendV2
 
+
+ArgumentParser = argparse.ArgumentParser()
+ArgumentParser.add_argument("--n", help="The size n of the problem", type=int, default=6)
 
 # Define problem constants
-n = 6
-seed = 123
+n = ArgumentParser.parse_known_args()[0].n
+if n<=2:
+    raise ValueError("The size n of the problem must be greater than 2")
 
+seed = 123
 random.seed(seed)
-backend = GenericBackendV2(n)
 
 
 # Create random edges array
@@ -34,7 +37,7 @@ draw_maxcut_graph(graph)
 
 # Classical algorithms
 classical_time, (brute_x, brute_cost) = maxcut_brute(weight_matrix)
-print(f"Classical solution: {brute_x}, cost: {brute_cost}, time: {classical_time}")
+print(f"Classical solution: {brute_x}, cost: {brute_cost}, time: {classical_time}\n")
 maxcut_gw(weight_matrix)
 draw_maxcut_graph(graph, brute_x, seed)
 
@@ -42,19 +45,17 @@ draw_maxcut_graph(graph, brute_x, seed)
 # Quantum Max-Cut
 eigen_result, trajectory, x, ising = maxcut_quantum(
     weight_matrix,
-    initial_point=[0.758, -0.108],
-    # initial_point=[0.2, -0.2],
-    optimizer=ADAM(maxiter=300),
+    # initial_point=[0.758, -0.108],
+    optimizer=SLSQP(maxiter=300),
     circuit='qaoa',
     # p=5,
-    # backend=backend
 )
 qc = eigen_result.optimal_circuit
 params = eigen_result.optimal_point
 draw_maxcut_graph(graph, x, seed)
 
 # Plot problem's energy field
-plot_qaoa_trajectory(trajectory, weight_matrix, qc, maxcut_cost_function, n, ising)
+# plot_qaoa_trajectory(trajectory, weight_matrix, qc, maxcut_cost_function, n, ising)
 
 
 # Final Circuit
