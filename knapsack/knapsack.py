@@ -11,7 +11,7 @@ ArgumentParser = argparse.ArgumentParser()
 ArgumentParser.add_argument("--n", help="The size n of the problem", type=int, default=4)
 
 # Define problem constants
-n = ArgumentParser.parse_args().n
+n = ArgumentParser.parse_known_args()[0].n
 if n<=0:
     raise ValueError("n must be a positive integer")
 

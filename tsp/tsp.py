@@ -9,7 +9,7 @@ ArgumentParser = argparse.ArgumentParser()
 ArgumentParser.add_argument("--n", help="The size n of the problem", type=int, default=4)
 
 # Define problem constants
-n = ArgumentParser.parse_args().n
+n = ArgumentParser.parse_known_args()[0].n
 if n<=2:
     raise ValueError("The size n of the problem must be greater than 2")
 
